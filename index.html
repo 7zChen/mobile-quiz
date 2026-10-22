@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>网络金融刷题助手</title>
+<style>
+:root{
+  --blue:#0878f9;--blue-soft:#eaf3ff;--ink:#172033;--secondary:#788397;
+  --line:#e8edf4;--surface:#fff;--page:#f4f6fa;--green:#168653;
+  --green-soft:#eaf8f0;--red:#d94848;--red-soft:#fff0f0;
+  --shadow:0 10px 34px rgba(27,45,77,.07);
+}
+*{box-sizing:border-box}
+html{background:var(--page);-webkit-text-size-adjust:100%}
+body{margin:0;background:linear-gradient(180deg,#edf4ff 0,#f5f7fb 240px,var(--page) 100%);color:var(--ink);
+  min-height:100vh;padding:28px 16px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif}
+button{font:inherit;-webkit-tap-highlight-color:transparent}
+.container{max-width:800px;margin:0 auto;background:var(--surface);border:1px solid rgba(228,234,243,.9);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+.topbar{padding:24px 26px 18px;border-bottom:1px solid var(--line)}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-icon{width:42px;height:42px;flex:none;border-radius:14px;background:linear-gradient(145deg,#1688ff,#0759d6);display:grid;place-items:center;color:#fff;font-size:21px;font-weight:700;box-shadow:0 6px 14px rgba(8,120,249,.22)}
+.brand-title{font-size:19px;font-weight:750;letter-spacing:-.4px}
+.brand-subtitle{font-size:12px;color:var(--secondary);margin-top:4px}
+.progress-pill{background:#f1f4f8;border-radius:999px;padding:8px 11px;font-size:12px;color:#5e6b80;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:5px;padding:4px;background:#f1f3f7;border-radius:13px}
+.tab{flex:1;min-width:0;border:0;border-radius:10px;background:transparent;color:#68758a;padding:11px 8px;cursor:pointer;font-size:14px;font-weight:600;transition:background .18s,color .18s,box-shadow .18s}
+.tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 7px rgba(25,40,70,.09)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 26px 0;flex-wrap:wrap}
+.mode-switch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--secondary)}
+.segmented{display:flex;gap:3px;background:#f1f3f7;padding:3px;border-radius:10px}
+.segmented button{border:0;border-radius:7px;background:transparent;padding:7px 11px;color:#68758a;font-size:12px;cursor:pointer}
+.segmented button.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,35,60,.1);font-weight:650}
+.fav-filter{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;color:#536178;font-size:12px;cursor:pointer}
+.fav-filter.active{background:#fff7df;border-color:#f1d27a;color:#8a6500}
+.question-box{padding:24px 26px 28px;min-height:320px}
+.question-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.question-type{font-size:12px;color:var(--blue);background:var(--blue-soft);padding:6px 9px;border-radius:7px;font-weight:650}
+.question-number{font-size:12px;color:var(--secondary);font-variant-numeric:tabular-nums}
+.question-text{font-size:18px;line-height:1.75;letter-spacing:.05px;font-weight:650;margin:0 0 22px;white-space:pre-wrap;overflow-wrap:anywhere}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{width:100%;text-align:left;border:1px solid #e4e9f1;border-radius:14px;background:#fff;padding:14px 15px;display:flex;align-items:flex-start;gap:12px;color:#273349;cursor:pointer;transition:border-color .16s,background .16s,transform .16s;line-height:1.55;font-size:15px}
+.option:active{transform:scale(.995)}
+.option-letter{width:28px;height:28px;flex:none;border-radius:9px;border:1px solid #e0e6ef;display:grid;place-items:center;color:#65738a;font-size:13px;font-weight:650;background:#fafbfc}
+.option-content{padding-top:3px;overflow-wrap:anywhere}
+.option:hover{border-color:#a8caff;background:#f9fbff}
+.option.selected{border-color:var(--blue);background:#f0f6ff}
+.option.selected .option-letter{border-color:var(--blue);background:var(--blue);color:#fff}
+.option.correct{border-color:#7ac99e;background:var(--green-soft)}
+.option.correct .option-letter{border-color:var(--green);background:var(--green);color:#fff}
+.option.wrong{border-color:#f0a0a0;background:var(--red-soft)}
+.option.wrong .option-letter{border-color:var(--red);background:var(--red);color:#fff}
+.option:disabled{cursor:default}
+.answer-status{display:none;margin-top:15px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.6}
+.answer-status.show{display:block}
+.answer-status.good{background:var(--green-soft);color:#176a43}
+.answer-status.bad{background:var(--red-soft);color:#a72e2e}
+.explanation{display:none;margin-top:12px;padding:15px 16px;border:1px solid #dbe9ff;background:#f4f8ff;border-radius:14px;font-size:14px;line-height:1.8;color:#435875;white-space:pre-wrap;overflow-wrap:anywhere}
+.explanation.show{display:block}
+.explanation strong{color:#1b4e9b}
+.load-tip{display:none;margin:0 26px;padding:14px;background:#fff7e6;border:1px solid #f6dfab;border-radius:12px;font-size:13px;line-height:1.7;color:#8a5a00}
+.btn{border:0;border-radius:12px;padding:11px 15px;cursor:pointer;font-size:14px;font-weight:650;transition:filter .15s,transform .15s}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 10px rgba(8,120,249,.17)}
+.btn-primary:hover{filter:brightness(1.04)}
+.btn-secondary{background:#f1f4f8;color:#344258}
+.btn-outline{background:#fff;border:1px solid #dce3ed;color:#536178}
+.btn-favorite{background:#fff8e4;border:1px solid #f3d88a;color:#8c6800}
+.btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+.footer{border-top:1px solid var(--line);padding:18px 26px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.footer-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.footer .btn{min-width:88px}
+.footer-hint{width:100%;font-size:12px;color:#8b96a8;line-height:1.5}
+.empty-state{padding:36px 10px;text-align:center;color:var(--secondary);font-size:14px;line-height:1.8}
+.empty-state strong{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
+@media(max-width:560px){
+  body{padding:12px 9px 20px}
+  .container{border-radius:19px}
+  .topbar{padding:19px 16px 15px}
+  .brand-icon{width:38px;height:38px;border-radius:12px}
+  .brand-title{font-size:17px}
+  .progress-pill{font-size:11px;padding:7px 8px}
+  .tab{font-size:13px;padding:10px 4px}
+  .toolbar{padding:14px 16px 0}
+  .question-box{padding:21px 16px 24px;min-height:300px}
+  .question-text{font-size:17px}
+  .option{padding:12px;border-radius:12px;font-size:14px}
+  .footer{padding:15px 16px 18px}
+  .footer .btn{min-width:auto;padding:10px 12px;font-size:13px}
+  .load-tip{margin:0 16px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="topbar">
+    <div class="brand-row">
+      <div class="brand">
+        <div class="brand-icon">✓</div>
+        <div><div class="brand-title">网络金融刷题助手</div><div class="brand-subtitle">按自己的节奏，稳步掌握每一道题</div></div>
+      </div>
+      <div class="progress-pill" id="progress">正在加载题库…</div>
+    </div>
+    <nav class="tabs" aria-label="题型切换">
+      <button class="tab active" data-type="single" type="button">单选题</button>
+      <button class="tab" data-type="multiple" type="button">多选题</button>
+      <button class="tab" data-type="judge" type="button">判断题</button>
+    </nav>
+  </header>
+
+  <div class="toolbar">
+    <div class="mode-switch"><span>刷题顺序</span><div class="segmented" role="group" aria-label="刷题顺序">
+      <button type="button" id="sequentialBtn" class="active">顺序</button>
+      <button type="button" id="randomBtn">乱序</button>
+    </div></div>
+    <button type="button" class="fav-filter" id="favFilterBtn">☆ 只看收藏</button>
+  </div>
+
+  <div class="load-tip" id="loadTip">
+    浏览器直接打开本地 HTML 时，可能会禁止网页读取同目录的 JSON 文件。请点击下方按钮选择 questions.json 题库文件。
+    <div style="margin-top:10px"><button class="btn btn-primary" id="pickFileBtn" type="button">选择 questions.json</button>
+    <input id="jsonFileInput" type="file" accept=".json,application/json" style="display:none"></div>
+  </div>
+
+  <main class="question-box">
+    <div id="questionContent">
+      <div class="question-meta"><span class="question-type" id="questionType">单选题</span><span class="question-number" id="questionNumber"></span></div>
+      <h1 class="question-text" id="questionText"></h1>
+      <div class="options" id="optionsBox"></div>
+      <div class="answer-status" id="answerStatus" role="status" aria-live="polite"></div>
+      <div class="explanation" id="explanation"></div>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none"><strong id="emptyTitle">暂无题目</strong><span id="emptyText">请先加载题库。</span></div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-group">
+      <button class="btn btn-secondary" id="prevBtn" type="button">上一题</button>
+      <button class="btn btn-secondary" id="nextBtn" type="button">下一题</button>
+    </div>
+    <div class="footer-group">
+      <button class="btn btn-favorite" id="favoriteBtn" type="button">☆ 收藏</button>
+      <button class="btn btn-outline" id="explainBtn" type="button">查看解析</button>
+      <button class="btn btn-primary" id="submitBtn" type="button">提交答案</button>
+    </div>
+    <div class="footer-hint" id="footerHint">单选题、判断题选择后自动判题；多选题选择完成后点击“提交答案”。</div>
+  </footer>
+</div>
+
+<script>
+let currentType = 'single';
+let currentIndex = 0; // 当前显示的是题目顺序中的位置
+let userAnswer = [];
+let submitted = false;
+let questionBank = {};
+let orderMode = 'sequential';
+let questionOrder = {single:[], multiple:[], judge:[]};
+let favoriteOnly = false;
+let favorites = new Set();
+const typeNames = {single:'单选题', multiple:'多选题', judge:'判断题'};
+const $ = id => document.getElementById(id);
+
+function safeReadJSON(key, fallback){
+  try { const value = JSON.parse(localStorage.getItem(key)); return value == null ? fallback : value; }
+  catch(e) { return fallback; }
+}
+function shuffle(array){
+  const result = array.slice();
+  for(let i=result.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [result[i],result[j]]=[result[j],result[i]];
+  }
+  return result;
+}
+function buildOrder(type, preserveCurrent=false){
+  const list = questionBank[type] || [];
+  let base = list.map((_,i)=>i);
+  if(favoriteOnly) base = base.filter(i=>favorites.has(favoriteKey(type,i)));
+  if(orderMode==='random') base = shuffle(base);
+  questionOrder[type] = base;
+  if(preserveCurrent && base.length){
+    const oldOriginalIndex = getOriginalIndex();
+    const found = base.indexOf(oldOriginalIndex);
+    currentIndex = found >= 0 ? found : 0;
+  } else currentIndex = 0;
+}
+function favoriteKey(type, originalIndex){ return `${type}:${originalIndex}`; }
+function getOriginalIndex(){
+  const order = questionOrder[currentType] || [];
+  return order[currentIndex];
+}
+function getCurrentQuestion(){
+  const originalIndex = getOriginalIndex();
+  if(originalIndex === undefined) return null;
+  return (questionBank[currentType] || [])[originalIndex] || null;
+}
+function initQuestionBank(data){
+  if(!data || !Array.isArray(data.single) || !Array.isArray(data.multiple) || !Array.isArray(data.judge)){
+    alert('题库格式不正确：JSON 顶层应包含 single、multiple、judge 三个数组。');
+    return;
+  }
+  questionBank = data;
+  $('loadTip').style.display = 'none';
+  const saved = safeReadJSON('examProgress', {});
+  if(['single','multiple','judge'].includes(saved.type)) currentType = saved.type;
+  if(['sequential','random'].includes(saved.mode)) orderMode = saved.mode;
+  favorites = new Set(Array.isArray(safeReadJSON('examFavorites', [])) ? safeReadJSON('examFavorites', []) : []);
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.type===currentType));
+  $('sequentialBtn').classList.toggle('active',orderMode==='sequential');
+  $('randomBtn').classList.toggle('active',orderMode==='random');
+  Object.keys(questionBank).forEach(type=>{
+    const list=questionBank[type]||[];
+    const savedOriginal = type===currentType && Number.isInteger(saved.originalIndex) ? saved.originalIndex : null;
+    let base=list.map((_,i)=>i);
+    if(favoriteOnly) base=base.filter(i=>favorites.has(favoriteKey(type,i)));
+    if(orderMode==='random') base=shuffle(base);
+    questionOrder[type]=base;
+    if(type===currentType && savedOriginal!==null){
+      const found=base.indexOf(savedOriginal);
+      currentIndex=found>=0?found:0;
+    }
+  });
+  loadQuestion();
+}
+function showFilePicker(){
+  $('loadTip').style.display='block';
+  $('progress').textContent='等待加载题库';
+}
+$('pickFileBtn').onclick=()=>$('jsonFileInput').click();
+$('jsonFileInput').addEventListener('change',async event=>{
+  const file=event.target.files&&event.target.files[0];
+  if(!file)return;
+  try{initQuestionBank(JSON.parse(await file.text()));}
+  catch(e){alert('题库读取失败，请确认选择的是有效的 questions.json 文件。');}
+});
+if(location.protocol==='file:'){
+  showFilePicker();
+}else{
+  fetch('./questions.json').then(res=>{if(!res.ok)throw new Error('HTTP '+res.status);return res.json();})
+    .then(initQuestionBank).catch(showFilePicker);
+}
+
+function persistProgress(){
+  const originalIndex=getOriginalIndex();
+  localStorage.setItem('examProgress',JSON.stringify({type:currentType,index:currentIndex,originalIndex,mode:orderMode}));
+}
+function setExplainVisible(visible){
+  const exp=$('explanation');
+  const q=getCurrentQuestion();
+  if(!visible || !q){
+    exp.classList.remove('show');
+    exp.textContent='';
+    $('explainBtn').textContent='查看解析';
+    return;
+  }
+  exp.innerHTML='';
+  const answer=document.createElement('strong');
+  answer.textContent='答案：'+q.ans;
+  const detail=document.createElement('div');
+  detail.textContent=q.exp || '暂无解析。';
+  exp.append(answer,detail);
+  exp.classList.add('show');
+  $('explainBtn').textContent='隐藏解析';
+}
+function loadQuestion(){
+  submitted=false;
+  userAnswer=[];
+  setExplainVisible(false); // 每次换题都重置解析按钮与内容，避免状态串题
+  $('answerStatus').className='answer-status';
+  $('answerStatus').textContent='';
+  const order=questionOrder[currentType]||[];
+  const q=getCurrentQuestion();
+  const hasQuestions=order.length>0 && !!q;
+  $('questionContent').style.display=hasQuestions?'block':'none';
+  $('emptyState').style.display=hasQuestions?'none':'block';
+  $('submitBtn').style.display=currentType==='multiple'?'inline-block':'none';
+  $('footerHint').textContent=currentType==='multiple'
+    ?'多选题可选择多个选项，确认后点击“提交答案”。'
+    :'单选题、判断题选择后会自动判题；可随时查看解析。';
+  $('progress').textContent=questionBank[currentType] ? `${order.length ? currentIndex+1 : 0} / ${order.length}` : '等待加载题库';
+  $('questionType').textContent=typeNames[currentType];
+  $('questionNumber').textContent=order.length ? `题库第 ${order[currentIndex]+1} 题` : '';
+  $('prevBtn').disabled=!hasQuestions || currentIndex<=0;
+  $('nextBtn').disabled=!hasQuestions || currentIndex>=order.length-1;
+  $('favoriteBtn').disabled=!hasQuestions;
+  $('explainBtn').disabled=!hasQuestions;
+  $('submitBtn').disabled=!hasQuestions;
+  if(!hasQuestions){
+    $('emptyTitle').textContent=favoriteOnly?'暂无收藏题目':'暂无题目';
+    $('emptyText').textContent=favoriteOnly?'当前题型还没有收藏题目，可关闭“只看收藏”继续刷题。':'题库为空或尚未成功加载。';
+    $('optionsBox').innerHTML='';
+    updateFavoriteButton();
+    return;
+  }
+  $('questionText').textContent=q.q;
+  const box=$('optionsBox');
+  box.innerHTML='';
+  (Array.isArray(q.opts)?q.opts:[]).forEach((opt,i)=>{
+    const letter=String(opt).charAt(0);
+    const div=document.createElement('button');
+    div.type='button';
+    div.className='option';
+    const badge=document.createElement('span');
+    badge.className='option-letter';
+    badge.textContent=letter;
+    const content=document.createElement('span');
+    content.className='option-content';
+    content.textContent=String(opt).length>2 ? String(opt).slice(2) : String(opt).slice(1);
+    div.append(badge,content);
+    div.onclick=()=>selectOption(i,letter);
+    box.appendChild(div);
+  });
+  updateFavoriteButton();
+  persistProgress();
+}
+function updateFavoriteButton(){
+  const originalIndex=getOriginalIndex();
+  const isFavorite=originalIndex!==undefined && favorites.has(favoriteKey(currentType,originalIndex));
+  $('favoriteBtn').textContent=isFavorite?'★ 已收藏':'☆ 收藏';
+}
+function selectOption(i,letter){
+  if(submitted)return;
+  if(currentType==='multiple'){
+    const idx=userAnswer.indexOf(letter);
+    if(idx>-1)userAnswer.splice(idx,1);else userAnswer.push(letter);
+    document.querySelectorAll('.option').forEach((el,idx)=>{
+      const optLetter=String(getCurrentQuestion().opts[idx]).charAt(0);
+      el.classList.toggle('selected',userAnswer.includes(optLetter));
+    });
+  }else{
+    userAnswer=[letter];
+    submitAnswer(); // 单选、判断题点选后立即判题
+  }
+}
+function submitAnswer(){
+  if(submitted)return;
+  if(userAnswer.length===0){alert('请先选择答案');return;}
+  const q=getCurrentQuestion();
+  if(!q)return;
+  submitted=true;
+  const correct=String(q.ans).split('');
+  let isCorrect;
+  if(currentType==='multiple'){
+    isCorrect=userAnswer.length===correct.length && userAnswer.every(a=>correct.includes(a));
+  }else{
+    isCorrect=userAnswer.length===1 && correct.includes(userAnswer[0]);
+  }
+  document.querySelectorAll('.option').forEach((el,i)=>{
+    const letter=String(q.opts[i]).charAt(0);
+    el.disabled=true;
+    if(correct.includes(letter))el.classList.add('correct');
+    if(userAnswer.includes(letter)&&!correct.includes(letter))el.classList.add('wrong');
+  });
+  $('answerStatus').className='answer-status show '+(isCorrect?'good':'bad');
+  $('answerStatus').textContent=isCorrect?'回答正确。':'回答错误。正确答案：'+q.ans;
+  if(currentType!=='multiple') setExplainVisible(true);
+}
+function toggleExplain(){
+  const visible=$('explanation').classList.contains('show');
+  setExplainVisible(!visible);
+}
+function toggleFavorite(){
+  const originalIndex=getOriginalIndex();
+  if(originalIndex===undefined)return;
+  const key=favoriteKey(currentType,originalIndex);
+  if(favorites.has(key))favorites.delete(key);else favorites.add(key);
+  localStorage.setItem('examFavorites',JSON.stringify(Array.from(favorites)));
+  updateFavoriteButton();
+  if(favoriteOnly){
+    const oldOriginal=originalIndex;
+    buildOrder(currentType,false);
+    const order=questionOrder[currentType];
+    const found=order.indexOf(oldOriginal);
+    currentIndex=found>=0?found:Math.min(currentIndex,Math.max(0,order.length-1));
+    loadQuestion();
+  }
+}
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick=()=>{
+    currentType=tab.dataset.type;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===tab));
+    buildOrder(currentType,false);
+    loadQuestion();
+  };
+});
+$('sequentialBtn').onclick=()=>{
+  if(orderMode==='sequential')return;
+  orderMode='sequential';
+  $('sequentialBtn').classList.add('active');$('randomBtn').classList.remove('active');
+  buildOrder(currentType,false);loadQuestion();
+};
+$('randomBtn').onclick=()=>{
+  if(orderMode==='random')return;
+  orderMode='random';
+  $('randomBtn').classList.add('active');$('sequentialBtn').classList.remove('active');
+  buildOrder(currentType,false);loadQuestion();
+};
+$('favFilterBtn').onclick=()=>{
+  favoriteOnly=!favoriteOnly;
+  $('favFilterBtn').classList.toggle('active',favoriteOnly);
+  $('favFilterBtn').textContent=favoriteOnly?'★ 查看全部':'☆ 只看收藏';
+  buildOrder(currentType,false);loadQuestion();
+};
+$('favoriteBtn').onclick=toggleFavorite;
+$('prevBtn').onclick=()=>{if(currentIndex>0){currentIndex--;loadQuestion();}};
+$('nextBtn').onclick=()=>{const order=questionOrder[currentType]||[];if(currentIndex<order.length-1){currentIndex++;loadQuestion();}};
+$('submitBtn').onclick=submitAnswer;
+$('explainBtn').onclick=toggleExplain;
+</script>
+</body>
+</html>
